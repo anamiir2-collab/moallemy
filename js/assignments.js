@@ -284,6 +284,46 @@ ${group.name}
         </form>
       `
     });
+    const groupSelect = document.querySelector(
+  '#add-assignment-form [name="groupId"]'
+);
+
+const dueDateInput = document.getElementById(
+  'assignment-due-date'
+);
+
+const dueHint = document.getElementById(
+  'assignment-due-hint'
+);
+
+const updateDueDate = () => {
+  const groupId = groupSelect.value;
+
+  if (!groupId) return;
+
+  const secondLesson =
+    this.getSecondUpcomingLesson(groupId);
+
+  if (secondLesson) {
+    dueDateInput.value = secondLesson.date;
+
+    dueHint.innerHTML =
+      `📅 موعد التسليم: <strong>${UI.formatDate(
+        secondLesson.date,
+        { weekday: true }
+      )}</strong> — الحصة الثانية القادمة`;
+  } else {
+    dueDateInput.value = today;
+
+    dueHint.textContent =
+      '⚠️ لا توجد حصتان قادمتان مسجلتان لهذه المجموعة، يمكنك تحديد الموعد يدويًا.';
+  }
+};
+
+groupSelect.addEventListener('change', updateDueDate);
+
+// تشغيل الحساب أول ما تفتح نافذة إضافة الواجب
+updateDueDate();
 
     document.getElementById('add-assignment-form').addEventListener('submit', (e) => {
       e.preventDefault();
