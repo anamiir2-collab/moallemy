@@ -223,7 +223,6 @@ ${group.name}
       return;
     }
     const today = new Date().toISOString().slice(0, 10);
-    const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
 
     UI.modal({
       title: 'إضافة واجب',
@@ -254,7 +253,24 @@ ${group.name}
             </div>
             <div class="field">
               <label>موعد التسليم <span class="required">*</span></label>
-              <input type="date" name="dueDate" required value="${nextWeek}">
+              <input
+  type="date"
+  name="dueDate"
+  id="assignment-due-date"
+  required
+  value="${today}"
+>
+<small
+  id="assignment-due-hint"
+  style="
+    display:block;
+    margin-top:6px;
+    color:var(--text-tertiary);
+    font-size:12px;
+  "
+>
+  سيتم تحديد موعد التسليم تلقائيًا حسب الحصة الثانية القادمة.
+</small>
             </div>
           </div>
           <div class="field">
