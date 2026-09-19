@@ -264,7 +264,6 @@ ${group.name}
     `تم تجهيز ${parents.length} رسالة — اختر ولي الأمر للإرسال`,
     'success'
   );
-  }
 },
 
   renderList(assignments, emptyTitle, emptyText) {
