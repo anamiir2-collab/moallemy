@@ -58,6 +58,135 @@ const Assignments = {
       el.addEventListener('click', () => this.openDetail(el.dataset.assignment));
     });
   },
+// ==========================================
+// حساب الحصة الثانية القادمة للمجموعة
+// ==========================================
+getSecondUpcomingLesson(groupId) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const lessons = Storage.list(
+    Storage.KEYS.lessons,
+    lesson => {
+      if (lesson.groupId !== groupId) return false;
+
+      const lessonDate = new Date(lesson.date + 'T00:00:00');
+
+      // نستبعد الحصص القديمة والملغاة
+      return lessonDate >= today && lesson.status !== 'ملغاة';
+    }
+  );
+
+  lessons.sort((a, b) => {
+    const dateA = new Date(a.date + 'T00:00:00');
+    const dateB = new Date(b.date + 'T00:00:00');
+
+    if (dateA - dateB !== 0) {
+      return dateA - dateB;
+    }
+
+    return (a.startTime || '').localeCompare(b.startTime || '');
+  });
+
+  // الحصة الثانية القادمة
+  return lessons[1] || null;
+},
+
+// ==========================================
+// إرسال الواجب لولي الأمر عبر واتساب
+// ==========================================
+sendAssignmentToParent(assignmentId, studentId = null) {
+  const assignment = Storage.find(
+    Storage.KEYS.assignments,
+    assignmentId
+  );
+
+  if (!assignment) {
+    UI.toast('لم يتم العثور على الواجب', 'error');
+    return;
+  }
+
+  const group = Storage.find(
+    Storage.KEYS.groups,
+    assignment.groupId
+  );
+
+  if (!group) {
+    UI.toast('لم يتم العثور على المجموعة', 'error');
+    return;
+  }
+
+  let students = Storage.list(
+    Storage.KEYS.students,
+    s =>
+      s.groupId === assignment.groupId &&
+      s.status === 'نشط'
+  );
+
+  if (studentId) {
+    students = students.filter(s => s.id === studentId);
+  }
+
+  if (!students.length) {
+    UI.toast('لا يوجد طلاب نشطون في هذه المجموعة', 'warning');
+    return;
+  }
+
+  let sentCount = 0;
+
+  students.forEach(student => {
+    if (!student.parentPhone) return;
+
+    let phone = String(student.parentPhone)
+      .replace(/\D/g, '');
+
+    if (phone.startsWith('01')) {
+      phone = '20' + phone.substring(1);
+    }
+
+    const message = `
+السلام عليكم ورحمة الله وبركاته
+
+نحيط حضرتكم علمًا بأنه تم تكليف الطالب:
+👤 ${student.name}
+
+📚 الواجب: ${assignment.name}
+
+${assignment.description ? `📝 التفاصيل: ${assignment.description}\n` : ''}${assignment.topic ? `📖 الدرس / الوحدة: ${assignment.topic}\n` : ''}
+
+📅 موعد التسليم:
+${UI.formatDate(assignment.dueDate, { weekday: true })}
+
+⏰ الموعد المحدد هو الحصة الثانية القادمة للمجموعة.
+
+🏫 المجموعة:
+${group.name}
+
+برجاء متابعة الطالب والتأكد من إنجاز الواجب قبل موعد التسليم.
+
+مع تحيات المدرس
+    `.trim();
+
+    const url =
+      `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+    window.open(url, '_blank');
+
+    sentCount++;
+  });
+
+  if (sentCount === 0) {
+    UI.toast(
+      'لا يوجد أرقام واتساب مسجلة لأولياء الأمور',
+      'warning'
+    );
+  } else {
+    UI.toast(
+      `تم تجهيز رسالة لـ ${sentCount} ولي أمر`,
+      'success'
+    );
+  }
+},
 
   renderList(assignments, emptyTitle, emptyText) {
     if (!assignments.length) return UI.emptyState('📋', emptyTitle, emptyText || '');
