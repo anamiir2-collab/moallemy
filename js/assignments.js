@@ -132,19 +132,18 @@ sendAssignmentToParent(assignmentId, studentId = null) {
     return;
   }
 
-  let sentCount = 0;
+    const parents = students
+    .filter(student => student.parentPhone)
+    .map(student => {
+      let phone = String(student.parentPhone)
+        .replace(/\D/g, '');
 
-  students.forEach(student => {
-    if (!student.parentPhone) return;
+      // تحويل الرقم المصري من 010... إلى 2010...
+      if (phone.startsWith('01')) {
+        phone = '20' + phone.substring(1);
+      }
 
-    let phone = String(student.parentPhone)
-      .replace(/\D/g, '');
-
-    if (phone.startsWith('01')) {
-      phone = '20' + phone.substring(1);
-    }
-
-    const message = `
+      const message = `
 السلام عليكم ورحمة الله وبركاته
 
 نحيط حضرتكم علمًا بأنه تم تكليف الطالب:
@@ -165,26 +164,106 @@ ${group.name}
 برجاء متابعة الطالب والتأكد من إنجاز الواجب قبل موعد التسليم.
 
 مع تحيات المدرس
-    `.trim();
+      `.trim();
 
-    const url =
-      `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      return {
+        student,
+        phone,
+        url: `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+      };
+    });
 
-    window.open(url, '_blank');
-
-    sentCount++;
-  });
-
-  if (sentCount === 0) {
+  // لو مفيش أي أرقام
+  if (!parents.length) {
     UI.toast(
       'لا يوجد أرقام واتساب مسجلة لأولياء الأمور',
       'warning'
     );
-  } else {
-    UI.toast(
-      `تم تجهيز رسالة لـ ${sentCount} ولي أمر`,
-      'success'
-    );
+    return;
+  }
+
+  // عرض كل أولياء الأمور
+  UI.modal({
+    title: 'إرسال الواجب لأولياء الأمور',
+
+    body: `
+      <div style="
+        margin-bottom:12px;
+        color:var(--text-secondary);
+        font-size:13px;
+        line-height:1.7;
+      ">
+        اختر ولي الأمر الذي تريد إرسال الواجب إليه:
+      </div>
+
+      <div class="list">
+
+        ${parents.map(parent => `
+          <div
+            class="list-item"
+            style="
+              display:flex;
+              align-items:center;
+              gap:10px;
+            "
+          >
+
+            <div class="avatar avatar-sm">
+              ${UI.initials(parent.student.name)}
+            </div>
+
+            <div class="list-item-body">
+
+              <div class="list-item-title">
+                ${parent.student.name}
+              </div>
+
+              <div
+                class="list-item-subtitle"
+                dir="ltr"
+              >
+                ${parent.phone}
+              </div>
+
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              style="
+                white-space:nowrap;
+                min-width:80px;
+              "
+              onclick="window.open('${parent.url}', '_blank');"
+            >
+              💬 إرسال
+            </button>
+
+          </div>
+        `).join('')}
+
+      </div>
+
+      <div
+        class="action-row"
+        style="margin-top:var(--space-4);"
+      >
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="UI.closeModal()"
+          style="width:100%;"
+        >
+          إغلاق
+        </button>
+      </div>
+    `
+  });
+
+  UI.toast(
+    `تم تجهيز ${parents.length} رسالة — اختر ولي الأمر للإرسال`,
+    'success'
+  );
   }
 },
 
