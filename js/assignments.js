@@ -376,6 +376,23 @@ updateDueDate();
             <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-tertiary);">المجموعة</span><span>${group ? group.name : '—'}</span></div>
             <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-tertiary);">التكليف</span><span>${UI.formatDate(a.assignedDate)}</span></div>
             <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-tertiary);">التسليم</span><span style="font-weight:700;">${UI.formatDate(a.dueDate)}</span></div>
+<div
+  style="
+    display:flex;
+    gap:8px;
+    margin-bottom:var(--space-4);
+    flex-wrap:wrap;
+  "
+>
+  <button
+    type="button"
+    class="btn btn-primary"
+    id="send-assignment-parents"
+    style="flex:1;"
+  >
+    📱 إرسال الواجب لأولياء الأمور
+  </button>
+</div>
             <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-tertiary);">الدرجة</span><span>${a.maxGrade}</span></div>
           </div>
         </div>
@@ -417,6 +434,11 @@ updateDueDate();
         </div>
       `
     });
+    document
+  .getElementById('send-assignment-parents')
+  ?.addEventListener('click', () => {
+    this.sendAssignmentToParent(assignmentId);
+  });
 
     document.querySelectorAll('[data-submission]').forEach(el => {
       el.addEventListener('click', () => this.openSubmissionEditor(el.dataset.submission, assignmentId));
