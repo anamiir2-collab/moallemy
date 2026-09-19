@@ -144,6 +144,28 @@ const Settings = {
         <p style="font-weight: 700; color: var(--text-secondary);">مُعلّمي | Moallemy</p>
         <p>الإصدار 1.0.0</p>
         <p style="margin-top: 4px;">صُنع بشغف للمدرسين في مصر 🌿</p>
+<p style="margin-top: 10px;">
+  <a
+    href="https://wa.me/201066227553"
+    target="_blank"
+    rel="noopener noreferrer"
+    style="
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 12px;
+      background: #25D366;
+      color: #fff;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
+    "
+  >
+    💬 تواصل معنا على واتساب
+  </a>
+</p>
       </div>
     `;
   },
